@@ -1,3 +1,5 @@
+import math
+
 test_input = """addx 15
 addx -11
 addx 6
@@ -160,6 +162,16 @@ class Device():
         self.signal_strength = 0
         self.watch_list = [20, 60, 100, 140, 180, 220]
         self.watch_list_total = 0
+        self.display = [list('.' * 40) for _ in range(0, 6)]
+        self.draw_pixel()
+
+    @property
+    def row(self):
+        return math.floor((self.cycle - 1) / 40)
+
+    @property
+    def pos(self):
+        return (self.cycle - 1) % 40
 
     def parse_line(self, line):
         if line == 'noop':
@@ -174,9 +186,14 @@ class Device():
     def add_cycle(self):
         self.cycle += 1
         self.update_signal_strength()
+        self.draw_pixel()
         if self.cycle in self.watch_list:
             self.watch_list_total += self.signal_strength
             print(f"For cycle {self.cycle} the signal strength = {self.signal_strength}")
+
+    def draw_pixel(self):
+        print (f"self.cycle {self.cycle}, self.row {self.row}, self.pos {self.pos}, self.value {self.value}")
+        self.display[self.row][self.pos] = '#' if self.value in [self.pos - 1, self.pos, self.pos + 1] else '.'
 
     def add_value(self, value):
         self.value += value
@@ -193,6 +210,19 @@ def test():
         d.parse_line(line)
     print (d.watch_list_total)
     assert d.watch_list_total == 13140
+    test_result = [
+        '##..##..##..##..##..##..##..##..##..##..',
+        '###...###...###...###...###...###...###.',
+        '####....####....####....####....####....',
+        '#####.....#####.....#####.....#####.....',
+        '######......######......######......####',
+        '#######.......#######.......#######.....'
+    ]
+    for i, row in enumerate(d.display):
+        print (''.join(row))
+        print(test_result[i])
+        assert ''.join(row) == test_result[i]
+
 
 def main():
     test()
@@ -202,6 +232,8 @@ def main():
         d.parse_line(line)
 
     print (d.watch_list_total)
+    for i, row in enumerate(d.display):
+        print (''.join(row))
 
 if __name__ == "__main__":
     main()
